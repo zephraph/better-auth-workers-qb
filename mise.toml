@@ -35,3 +35,14 @@ description = "Prepare for publishing"
 [tasks.fmt]
 run = "biome check --write --unsafe ."
 description = "Format and fix code with Biome"
+
+[tasks.example]
+run = "bun run dev"
+dir = "example"
+depends = ["install:example"]
+description = "Run the Cloudflare D1 example application"
+
+[tasks."install:example"]
+run = "bun install"
+dir = "example"
+description = "Install dependencies for the example application"

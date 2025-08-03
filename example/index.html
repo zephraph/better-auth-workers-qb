@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Better Auth + Cloudflare D1 Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .auth-section {
+            border: 1px solid #eee;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .hidden {
+            display: none;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .demo-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Better Auth + Cloudflare D1 Example</h1>
+    
+    <div class="demo-notice">
+        <strong>Demo Frontend:</strong> This demonstrates the UI for Better Auth with the workers-qb adapter. The authentication would work when deployed to Cloudflare Pages with the proper functions setup.
+    </div>
+    
+    <div id="unauthenticated" class="auth-section">
+        <h2>Sign Up / Sign In</h2>
+        
+        <form id="signupForm">
+            <h3>Sign Up</h3>
+            <div class="form-group">
+                <label for="signupEmail">Email:</label>
+                <input type="email" id="signupEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">Password:</label>
+                <input type="password" id="signupPassword" required>
+            </div>
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <hr style="margin: 2rem 0;">
+
+        <form id="signinForm">
+            <h3>Sign In</h3>
+            <div class="form-group">
+                <label for="signinEmail">Email:</label>
+                <input type="email" id="signinEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="signinPassword">Password:</label>
+                <input type="password" id="signinPassword" required>
+            </div>
+            <button type="submit">Sign In</button>
+        </form>
+    </div>
+
+    <div id="authenticated" class="auth-section hidden">
+        <h2>Welcome!</h2>
+        <div id="userInfo" class="user-info"></div>
+        <button id="signoutBtn">Sign Out</button>
+    </div>
+
+    <script>
+        const API_BASE = '/api/auth';
+
+        // DOM elements
+        const unauthenticatedSection = document.getElementById('unauthenticated');
+        const authenticatedSection = document.getElementById('authenticated');
+        const userInfo = document.getElementById('userInfo');
+        const signupForm = document.getElementById('signupForm');
+        const signinForm = document.getElementById('signinForm');
+        const signoutBtn = document.getElementById('signoutBtn');
+
+        // Check authentication status on page load
+        checkAuthStatus();
+
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/session`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.user) {
+                        showAuthenticated(data.user);
+                    } else {
+                        showUnauthenticated();
+                    }
+                } else {
+                    showUnauthenticated();
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                showUnauthenticated();
+            }
+        }
+
+        function showAuthenticated(user) {
+            unauthenticatedSection.classList.add('hidden');
+            authenticatedSection.classList.remove('hidden');
+            userInfo.innerHTML = `
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>ID:</strong> ${user.id}</p>
+                <p><strong>Created:</strong> ${new Date(user.createdAt).toLocaleString()}</p>
+            `;
+        }
+
+        function showUnauthenticated() {
+            authenticatedSection.classList.add('hidden');
+            unauthenticatedSection.classList.remove('hidden');
+        }
+
+        // Sign up
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/sign-up/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showAuthenticated(data.user);
+                    signupForm.reset();
+                } else {
+                    const error = await response.json();
+                    alert(`Sign up failed: ${error.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Sign up error:', error);
+                alert('Sign up failed');
+            }
+        });
+
+        // Sign in
+        signinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/sign-in/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showAuthenticated(data.user);
+                    signinForm.reset();
+                } else {
+                    const error = await response.json();
+                    alert(`Sign in failed: ${error.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Sign in error:', error);
+                alert('Sign in failed');
+            }
+        });
+
+        // Sign out
+        signoutBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/sign-out`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    showUnauthenticated();
+                } else {
+                    alert('Sign out failed');
+                }
+            } catch (error) {
+                console.error('Sign out error:', error);
+                alert('Sign out failed');
+            }
+        });
+    </script>
+</body>
+</html>
