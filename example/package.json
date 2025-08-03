@@ -3,7 +3,10 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "concurrently \"npm run mock-server\" \"npm run dev:vite\"",
+		"dev:vite": "vite dev",
+		"dev:wrangler": "wrangler pages dev --compatibility-date=2024-05-15 --binding DB=example-auth-db --d1 DB=example-auth-db --local --port 5173 dist",
+		"mock-server": "node mock-server.js",
 		"build": "vite build",
 		"preview": "vite preview",
 		"db:local": "wrangler d1 execute example-auth-db --local --file=./schema.sql"
@@ -15,8 +18,9 @@
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20250803.0",
 		"@types/node": "^22.8.7",
+		"concurrently": "^9.2.0",
 		"typescript": "^5.9.2",
 		"vite": "^5.4.10",
-		"wrangler": "^3.88.0"
+		"wrangler": "^4.27.0"
 	}
 }

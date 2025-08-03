@@ -1,16 +1,16 @@
 # Cloudflare D1 + Better Auth Example
 
-This example demonstrates how to use the `better-auth-workers-qb` adapter with Cloudflare D1 in a Vite-powered application.
+This example demonstrates the frontend UI and development setup for Better Auth with the `better-auth-workers-qb` adapter.
 
-**Note:** This is a local development example only. It uses npm for proper dependency resolution (bun may cause build issues).
+**Note:** This shows the UI and demonstrates how to import the adapter. The authentication would work when deployed to Cloudflare Pages with proper functions setup. For local development, use npm for dependency resolution.
 
 ## Features
 
-- Better Auth authentication with email/password
-- Cloudflare D1 database integration
+- Better Auth frontend with email/password forms
+- TypeScript path mapping to import the adapter
 - Vite development server
-- TypeScript support
-- Simple HTML frontend with authentication flow
+- D1 database schema for Better Auth
+- Demonstrates the adapter integration pattern
 
 ## Setup
 
@@ -21,80 +21,83 @@ This example demonstrates how to use the `better-auth-workers-qb` adapter with C
    
    **Important:** Use npm, not bun, to avoid native dependency issues.
 
-2. **Create the D1 database locally:**
-   ```bash
-   # Initialize the local database with schema
-   npm run db:local
-   ```
-
-3. **Start development server:**
+2. **Start development server:**
    ```bash
    npm run dev
    ```
 
-   The app will be available at `http://localhost:5173`
-
-## Database Setup
-
-### Local Development
-
-The local database will be automatically created when you run the dev server. To manually set up the schema:
-
-```bash
-npm run db:local
-```
-
-This example is designed for local development only.
+   The demo frontend will be available at `http://localhost:5173`
 
 ## Project Structure
 
 ```
 example/
-├── functions/
-│   └── api/
-│       └── auth/
-│           └── [...auth].ts    # Better Auth API routes
-├── index.html                  # Simple frontend
-├── package.json
-├── vite.config.ts             # Vite configuration (with path mapping)
-├── tsconfig.json              # TypeScript config (with path mapping)
-├── wrangler.jsonc             # Cloudflare configuration
-└── schema.sql                 # D1 database schema
+├── index.html                  # Demo frontend with auth forms
+├── package.json               # Dependencies & scripts  
+├── vite.config.ts             # Vite config with path mapping
+├── tsconfig.json              # TypeScript config with path mapping
+├── wrangler.jsonc             # Cloudflare D1 configuration
+└── schema.sql                 # D1 database schema for Better Auth
 ```
 
-**Note:** The example imports the adapter from `better-auth-workers-qb` which is mapped to `../src` via TypeScript path mapping in `tsconfig.json` and Vite aliases in `vite.config.ts`. This allows the example to use the actual source code without copying it.
+## Path Mapping
 
-## How It Works
+The example imports the adapter using:
 
-1. **Authentication API**: The `functions/api/auth/[...auth].ts` file handles all Better Auth routes using the `better-auth-workers-qb` adapter.
+```typescript
+import { workersQBAdapter } from "better-auth-workers-qb";
+```
 
-2. **Database**: Cloudflare D1 provides the SQLite database, accessed through the workers-qb query builder.
+This is mapped to `../src` via:
+- TypeScript path mapping in `tsconfig.json` 
+- Vite aliases in `vite.config.ts`
 
-3. **Frontend**: A simple HTML page demonstrates the authentication flow with sign up, sign in, and sign out functionality.
+This allows the example to use the actual source code without copying it.
 
-4. **Development**: The Vite dev server provides local development. The auth API routes are served from the functions directory.
+## For Production Use
 
-## API Endpoints
+In a real Cloudflare Pages deployment, you would:
 
-All Better Auth endpoints are available under `/api/auth/`:
+1. Create Cloudflare Functions in `functions/api/auth/[...auth].ts`
+2. Use the adapter like this:
 
-- `POST /api/auth/sign-up/email` - Sign up with email/password
-- `POST /api/auth/sign-in/email` - Sign in with email/password
-- `POST /api/auth/sign-out` - Sign out
-- `GET /api/auth/session` - Get current session
-- And more...
+```typescript
+import { betterAuth } from "better-auth";
+import { workersQBAdapter } from "better-auth-workers-qb";
 
-## Configuration
+export async function onRequest(context) {
+  const auth = betterAuth({
+    database: workersQBAdapter({
+      database: context.env.DB, // D1 database binding
+      usePlural: false,
+      debugLogs: true,
+    }),
+    emailAndPassword: { enabled: true },
+  });
 
-The Better Auth configuration in `functions/api/auth/[...auth].ts` includes:
+  return auth.handler(context.request);
+}
+```
 
-- Email/password authentication
-- Session management (7-day expiry, 1-day update age)
-- Debug logging enabled
-- Workers QB adapter with D1 database
+3. Deploy with `wrangler pages deploy dist`
 
-## Troubleshooting
+## Database Schema
 
-- **Database errors**: Make sure you've run the schema migration with `npm run db:local`
-- **Import errors**: Ensure all dependencies are installed with `npm install`
-- **CORS issues**: The Cloudflare Functions plugin should handle CORS automatically in development
+The included `schema.sql` contains all the tables needed for Better Auth:
+- `user` - User accounts
+- `session` - User sessions  
+- `account` - OAuth accounts
+- `verification` - Email verification tokens
+
+To set up the schema locally:
+```bash
+npm run db:local
+```
+
+## What This Demonstrates
+
+- ✅ Complete Better Auth frontend UI
+- ✅ TypeScript path mapping for clean imports
+- ✅ D1 database schema setup
+- ✅ Development workflow with Vite
+- ✅ How the adapter would integrate in production
