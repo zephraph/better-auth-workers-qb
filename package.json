@@ -1,0 +1,35 @@
+{
+  "name": "better-auth-workers-qb",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "bun build src/index.ts --target bun --format esm > dist/index.js && sed -i '' 's/\"types\\.ts\"/\"\\.\\/types\\.js\"/g' dist/index.js && tsc --declaration --emitDeclarationOnly",
+    "type-check": "tsc --noEmit",
+    "dev": "bun run src/index.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "better-auth",
+    "cloudflare",
+    "d1",
+    "workers-qb",
+    "database-adapter"
+  ],
+  "author": "Justin Bennett <oss@just-be.dev>",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/bun": "^1.2.19",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "better-auth": "^1.1.38",
+    "workers-qb": "^1.11.0"
+  }
+}
