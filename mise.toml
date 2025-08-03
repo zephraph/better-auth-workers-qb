@@ -31,3 +31,7 @@ description = "Run tests in watch mode"
 [tasks.prepublishOnly]
 run = "bun run build"
 description = "Prepare for publishing"
+
+[tasks.fmt]
+run = "biome check --write --unsafe ."
+description = "Format and fix code with Biome"
