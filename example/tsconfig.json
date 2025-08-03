@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["ES2022", "WebWorker"],
+		"module": "ESNext",
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"types": ["@cloudflare/workers-types"],
+		"baseUrl": ".",
+		"paths": {
+			"better-auth-workers-qb": ["../src/index.ts"],
+			"better-auth-workers-qb/*": ["../src/*"]
+		}
+	},
+	"include": ["**/*.ts", "**/*.tsx"]
+}
