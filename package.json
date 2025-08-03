@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "bun build src/index.ts --target bun --format esm > dist/index.js && sed -i '' 's/\"types\\.ts\"/\"\\.\\\/types\\.js\"/g' dist/index.js && tsc --declaration --emitDeclarationOnly",
+    "build": "bun build src/index.ts --target bun --format esm > dist/index.js && sed -i '' 's/\"types\\.ts\"/\"\\.\\/types\\.js\"/g' dist/index.js && tsc --declaration --emitDeclarationOnly",
     "type-check": "tsc --noEmit",
     "dev": "bun run src/index.ts",
     "test": "bun test",
@@ -19,7 +19,7 @@
     "workers-qb",
     "database-adapter"
   ],
-  "author": "",
+  "author": "Justin Bennett <oss@just-be.dev>",
   "license": "MIT",
   "files": [
     "dist"
