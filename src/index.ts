@@ -1,6 +1,7 @@
 import { createAdapter } from "better-auth/adapters";
 import { D1QB, type QueryBuilder } from "workers-qb";
 import type { WorkersQBAdapterConfig } from "./types";
+import { generateSQLSchema } from "./utils";
 
 export const workersQBAdapter = (
 	config: WorkersQBAdapterConfig,
@@ -25,15 +26,7 @@ export const workersQBAdapter = (
 			const qb = getQueryBuilder();
 
 			return {
-				create: async ({
-					model,
-					data,
-					select,
-				}: {
-					model: string;
-					data: any;
-					select?: string[];
-				}) => {
+				async create({ model, data }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const query = qb.insert({
@@ -46,15 +39,7 @@ export const workersQBAdapter = (
 					return result.results?.[0] || null;
 				},
 
-				update: async ({
-					model,
-					where,
-					update,
-				}: {
-					model: string;
-					where: any[];
-					update: any;
-				}) => {
+				async update({ model, where, update }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const conditions = where.map(
@@ -76,15 +61,7 @@ export const workersQBAdapter = (
 					return result.results?.[0] || null;
 				},
 
-				updateMany: async ({
-					model,
-					where,
-					update,
-				}: {
-					model: string;
-					where: any[];
-					update: Record<string, any>;
-				}) => {
+				async updateMany({ model, where, update }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const queryParams: any = {
@@ -109,7 +86,7 @@ export const workersQBAdapter = (
 					return result.changes || 0;
 				},
 
-				delete: async ({ model, where }: { model: string; where: any[] }) => {
+				async delete({ model, where }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const conditions = where.map(
@@ -129,13 +106,7 @@ export const workersQBAdapter = (
 					return;
 				},
 
-				deleteMany: async ({
-					model,
-					where,
-				}: {
-					model: string;
-					where: any[];
-				}) => {
+				async deleteMany({ model, where }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const queryParams: any = {
@@ -163,15 +134,7 @@ export const workersQBAdapter = (
 					return result.changes || 0;
 				},
 
-				findOne: async ({
-					model,
-					where,
-					select,
-				}: {
-					model: string;
-					where: any[];
-					select?: string[];
-				}) => {
+				async findOne({ model, where, select }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const conditions = where.map(
@@ -192,22 +155,7 @@ export const workersQBAdapter = (
 					return result.results || null;
 				},
 
-				findMany: async ({
-					model,
-					where,
-					limit,
-					sortBy,
-					offset,
-				}: {
-					model: string;
-					where?: any[];
-					limit: number;
-					sortBy?: {
-						field: string;
-						direction: "asc" | "desc";
-					};
-					offset?: number;
-				}) => {
+				async findMany({ model, where, limit, sortBy, offset }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const queryParams: any = {
@@ -246,7 +194,7 @@ export const workersQBAdapter = (
 					return result.results || [];
 				},
 
-				count: async ({ model, where }: { model: string; where?: any[] }) => {
+				async count({ model, where }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
 					const queryParams: any = {
@@ -270,9 +218,20 @@ export const workersQBAdapter = (
 
 					return result.results?.count || 0;
 				},
+
+				async createSchema({ file, tables }) {
+					const schema = generateSQLSchema(tables, config.usePlural);
+
+					return {
+						code: schema,
+						path: file || "schema.sql",
+						overwrite: true,
+					};
+				},
 			};
 		},
 	});
 
 export default workersQBAdapter;
 export * from "./types";
+export * from "./utils";
