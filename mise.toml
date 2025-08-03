@@ -4,3 +4,30 @@ bun = "1.2.19"
 [env]
 _.path = "node_modules/.bin"
 _.file = ".env"
+
+[hooks]
+postinstall = "bun install"
+
+[tasks.build]
+run = "bun build src/index.ts --target bun --format esm > dist/index.js && sed -i '' 's/\"types\\.ts\"/\"\\.\\/types\\.js\"/g' dist/index.js && tsc --declaration --emitDeclarationOnly"
+description = "Build the project"
+
+[tasks.type-check]
+run = "tsc --noEmit"
+description = "Type check the project"
+
+[tasks.dev]
+run = "bun run src/index.ts"
+description = "Run development server"
+
+[tasks.test]
+run = "bun test"
+description = "Run tests"
+
+[tasks.test-watch]
+run = "bun test --watch"
+description = "Run tests in watch mode"
+
+[tasks.prepublishOnly]
+run = "bun run build"
+description = "Prepare for publishing"
