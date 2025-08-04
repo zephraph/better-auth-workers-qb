@@ -1,3 +1,8 @@
+import { type Migration } from 'workers-qb';
+
+export const createInitialTables: Migration = {
+	name: '0001_create_initial_tables',
+	sql: `
 -- Better Auth database schema for D1
 -- This creates the necessary tables for better-auth
 
@@ -48,3 +53,9 @@ CREATE TABLE IF NOT EXISTS verification (
 CREATE INDEX IF NOT EXISTS idx_session_userId ON session(userId);
 CREATE INDEX IF NOT EXISTS idx_account_userId ON account(userId);
 CREATE INDEX IF NOT EXISTS idx_verification_identifier ON verification(identifier);
+	`.trim(),
+};
+
+export const migrations: Migration[] = [
+	createInitialTables,
+];

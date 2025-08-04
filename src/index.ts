@@ -222,6 +222,27 @@ export const workersQBAdapter = (
 				async createSchema({ file, tables }) {
 					const schema = generateSQLSchema(tables, config.usePlural);
 
+					if (config.createSchema === "migrations") {
+						// Generate TypeScript migration file
+						const migrationCode = `import { type Migration } from 'workers-qb';
+
+export const createInitialTables: Migration = {
+	name: '0001_create_initial_tables',
+	sql: \`${schema}\`,
+};
+
+export const migrations: Migration[] = [
+	createInitialTables,
+];`;
+
+						return {
+							code: migrationCode,
+							path: file || "migrations.ts",
+							overwrite: true,
+						};
+					}
+
+					// Default behavior - generate SQL file
 					return {
 						code: schema,
 						path: file || "schema.sql",
@@ -235,3 +256,4 @@ export const workersQBAdapter = (
 export default workersQBAdapter;
 export * from "./types";
 export * from "./utils";
+export * from "./migrations";

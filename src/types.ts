@@ -37,6 +37,7 @@ export interface WorkersQBAdapterConfig {
 	database: D1Database | QueryBuilder<any>;
 	debugLogs?: AdapterDebugLogs;
 	usePlural?: boolean;
+	createSchema?: "sql" | "migrations";
 }
 
 export interface WhereCondition {
