@@ -9,8 +9,12 @@ _.file = ".env"
 postinstall = "bun install"
 
 [tasks.build]
-run = "bun build src/index.ts --target bun --format esm > dist/index.js && sed -i '' 's/\"types\\.ts\"/\"\\.\\/types\\.js\"/g' dist/index.js && tsc --declaration --emitDeclarationOnly"
-description = "Build the project"
+run = "tsc"
+description = "Build JavaScript modules and TypeScript declarations"
+
+[tasks."build:clean"]
+run = "rm -rf dist"
+description = "Clean build artifacts"
 
 [tasks.type-check]
 run = "tsc --noEmit"
@@ -21,15 +25,22 @@ run = "bun run src/index.ts"
 description = "Run development server"
 
 [tasks.test]
-run = "bun test"
-description = "Run tests"
+depends = ["build"]
+run = "vitest run"
+description = "Build and run all tests"
 
-[tasks.test-watch]
-run = "bun test --watch"
+[tasks."test:watch"]
+depends = ["build"]
+run = "vitest"
 description = "Run tests in watch mode"
 
+[tasks."test:bun"]
+run = "bun test"
+description = "Run bun tests (when working)"
+
+
 [tasks.prepublishOnly]
-run = "bun run build"
+run = "build"
 description = "Prepare for publishing"
 
 [tasks.fmt]

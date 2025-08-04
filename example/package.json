@@ -9,10 +9,12 @@
 		"mock-server": "node mock-server.js",
 		"build": "vite build",
 		"preview": "vite preview",
-		"db:local": "wrangler d1 execute example-auth-db --local --file=./schema.sql"
+		"db:local": "wrangler d1 execute example-auth-db --local --file=./schema.sql",
+		"db:migrate": "wrangler d1 migrations apply example-auth-db --local"
 	},
 	"dependencies": {
 		"better-auth": "^1.1.38",
+		"better-auth-workers-qb": "workspace:*",
 		"workers-qb": "^1.11.0"
 	},
 	"devDependencies": {

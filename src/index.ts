@@ -1,7 +1,7 @@
 import { createAdapter } from "better-auth/adapters";
 import { D1QB, type QueryBuilder } from "workers-qb";
-import type { WorkersQBAdapterConfig } from "./types";
-import { generateSQLSchema } from "./utils";
+import type { WorkersQBAdapterConfig } from "./types.js";
+import { generateSQLSchema } from "./utils.js";
 
 export const workersQBAdapter = (
 	config: WorkersQBAdapterConfig,
@@ -13,8 +13,8 @@ export const workersQBAdapter = (
 			usePlural: config.usePlural ?? false,
 			debugLogs: config.debugLogs ?? false,
 		},
-		adapter: ({ options, schema }) => {
-			const getQueryBuilder = (): any => {
+		adapter: ({ options: _options, schema: _schema }) => {
+			const getQueryBuilder = (): D1QB | QueryBuilder<any> => {
 				if ("prepare" in config.database) {
 					// It's a D1Database
 					return new D1QB(config.database);
@@ -64,7 +64,7 @@ export const workersQBAdapter = (
 				async updateMany({ model, where, update }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
-					const queryParams: any = {
+					const queryParams: Record<string, unknown> = {
 						tableName,
 						data: update,
 					};
@@ -109,7 +109,7 @@ export const workersQBAdapter = (
 				async deleteMany({ model, where }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
-					const queryParams: any = {
+					const queryParams: Record<string, unknown> = {
 						tableName,
 						where: {
 							conditions: ["1 = 1"],
@@ -158,7 +158,7 @@ export const workersQBAdapter = (
 				async findMany({ model, where, limit, sortBy, offset }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
-					const queryParams: any = {
+					const queryParams: Record<string, unknown> = {
 						tableName,
 						fields: "*",
 					};
@@ -197,7 +197,7 @@ export const workersQBAdapter = (
 				async count({ model, where }) {
 					const tableName = config.usePlural ? `${model}s` : model;
 
-					const queryParams: any = {
+					const queryParams: Record<string, unknown> = {
 						tableName,
 						fields: "COUNT(*) as count",
 					};
@@ -220,8 +220,37 @@ export const workersQBAdapter = (
 				},
 
 				async createSchema({ file, tables }) {
-					const schema = generateSQLSchema(tables, config.usePlural);
+					if (config.createSchema === "migrations") {
+						// Generate operation-based migration file
+						const { convertBetterAuthToOperations } = await import(
+							"./schema-converter.js"
+						);
 
+						const operationalMigration = convertBetterAuthToOperations(
+							tables,
+							config.usePlural,
+						);
+
+						const migrationCode = `import type { OperationalMigration } from './schema-types.js';
+
+export const createInitialTables: OperationalMigration = {
+	name: '${operationalMigration.name}',
+	operations: ${JSON.stringify(operationalMigration.operations, null, 2)}
+};
+
+export const migrations: OperationalMigration[] = [
+	createInitialTables,
+];`;
+
+						return {
+							code: migrationCode,
+							path: file || "migrations.ts",
+							overwrite: true,
+						};
+					}
+
+					// Default behavior - generate SQL file
+					const schema = generateSQLSchema(tables, config.usePlural);
 					return {
 						code: schema,
 						path: file || "schema.sql",
@@ -233,5 +262,10 @@ export const workersQBAdapter = (
 	});
 
 export default workersQBAdapter;
-export * from "./types";
-export * from "./utils";
+export * from "./migrations.js";
+export { convertBetterAuthToOperations } from "./schema-converter.js";
+export { SchemaProcessor } from "./schema-processor.js";
+export * from "./schema-types.js";
+export { SQLGenerator } from "./sql-generator.js";
+export * from "./types.js";
+export * from "./utils.js";
