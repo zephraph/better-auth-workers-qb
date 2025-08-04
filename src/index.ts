@@ -1,7 +1,7 @@
 import { createAdapter } from "better-auth/adapters";
 import { D1QB, type QueryBuilder } from "workers-qb";
-import type { WorkersQBAdapterConfig } from "./types";
-import { generateSQLSchema } from "./utils";
+import type { WorkersQBAdapterConfig } from "./types.js";
+import { generateSQLSchema } from "./utils.js";
 
 export const workersQBAdapter = (
 	config: WorkersQBAdapterConfig,
@@ -222,11 +222,11 @@ export const workersQBAdapter = (
 				async createSchema({ file, tables }) {
 					if (config.createSchema === "migrations") {
 						// Generate operation-based migration file
-						const { convertBetterAuthToOperations } = await import("./schema-converter");
+						const { convertBetterAuthToOperations } = await import("./schema-converter.js");
 						
 						const operationalMigration = convertBetterAuthToOperations(tables, config.usePlural);
 
-						const migrationCode = `import type { OperationalMigration } from './schema-types';
+						const migrationCode = `import type { OperationalMigration } from './schema-types.js';
 
 export const createInitialTables: OperationalMigration = {
 	name: '${operationalMigration.name}',
@@ -257,10 +257,10 @@ export const migrations: OperationalMigration[] = [
 	});
 
 export default workersQBAdapter;
-export * from "./types";
-export * from "./utils";
-export * from "./migrations";
-export * from "./schema-types";
-export { SchemaProcessor } from "./schema-processor";
-export { SQLGenerator } from "./sql-generator";
-export { convertBetterAuthToOperations } from "./schema-converter";
+export * from "./types.js";
+export * from "./utils.js";
+export * from "./migrations.js";
+export * from "./schema-types.js";
+export { SchemaProcessor } from "./schema-processor.js";
+export { SQLGenerator } from "./sql-generator.js";
+export { convertBetterAuthToOperations } from "./schema-converter.js";

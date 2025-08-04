@@ -1,4 +1,4 @@
-import type { OperationalMigration } from './schema-types';
+import type { OperationalMigration } from './schema-types.js';
 
 export const createInitialTables: OperationalMigration = {
 	name: '0001_create_initial_tables',

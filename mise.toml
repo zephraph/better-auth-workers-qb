@@ -9,16 +9,8 @@ _.file = ".env"
 postinstall = "bun install"
 
 [tasks.build]
-depends = ["build:modules", "build:types"]
-description = "Build the complete project"
-
-[tasks."build:modules"]
-run = "./scripts/build-modules.sh"
-description = "Build JavaScript modules from TypeScript"
-
-[tasks."build:types"]
-run = "./scripts/build-types.sh"
-description = "Generate TypeScript declaration files"
+run = "tsc"
+description = "Build JavaScript modules and TypeScript declarations"
 
 [tasks."build:clean"]
 run = "rm -rf dist"

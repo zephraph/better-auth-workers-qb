@@ -5,7 +5,7 @@ import type {
 	TableDefinition,
 	ColumnDefinition,
 	IndexDefinition 
-} from "./schema-types";
+} from "./schema-types.js";
 
 /**
  * Processes migration operations to compute the final schema state

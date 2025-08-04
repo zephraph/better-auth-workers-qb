@@ -1,5 +1,5 @@
 import type { BetterAuthDbSchema } from "better-auth/db";
-import type { OperationalMigration, MigrationOperation, ColumnDefinition } from "./schema-types";
+import type { OperationalMigration, MigrationOperation, ColumnDefinition } from "./schema-types.js";
 
 /**
  * Converts Better Auth table schema to migration operations

@@ -1,4 +1,4 @@
-import type { SchemaState, ColumnDefinition, IndexDefinition } from "./schema-types";
+import type { SchemaState, ColumnDefinition, IndexDefinition } from "./schema-types.js";
 
 /**
  * Generates SQL DDL statements from a schema state
