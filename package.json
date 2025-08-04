@@ -5,13 +5,13 @@
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "bun build src/index.ts --target bun --format esm > dist/index.js && sed -i '' 's/\"types\\.ts\"/\"\\.\\/types\\.js\"/g; s/\"utils\\.ts\"/\"\\.\\/utils\\.js\"/g; s/\"migrations\\.ts\"/\"\\.\\/migrations\\.js\"/g; s/\"schema-types\\.ts\"/\"\\.\\/schema-types\\.js\"/g; s/\"schema-processor\\.ts\"/\"\\.\\/schema-processor\\.js\"/g; s/\"sql-generator\\.ts\"/\"\\.\\/sql-generator\\.js\"/g; s/\"schema-converter\\.ts\"/\"\\.\\/schema-converter\\.js\"/g' dist/index.js && bun build src/migrations.ts --target bun --format esm > dist/migrations.js && bun build src/schema-types.ts --target bun --format esm > dist/schema-types.js && bun build src/schema-processor.ts --target bun --format esm > dist/schema-processor.js && bun build src/sql-generator.ts --target bun --format esm > dist/sql-generator.js && bun build src/schema-converter.ts --target bun --format esm > dist/schema-converter.js && bun build src/utils.ts --target bun --format esm > dist/utils.js && sed -i '' 's/\"schema-types\\.ts\"/\"\\.\\/schema-types\\.js\"/g' dist/migrations.js dist/schema-processor.js dist/sql-generator.js dist/schema-converter.js && tsc --declaration --emitDeclarationOnly",
-		"type-check": "tsc --noEmit",
-		"dev": "bun run src/index.ts",
-		"test": "npm run build && node test-migrations.js",
-		"test:migrations": "node test-migrations.js",
-		"test:watch": "bun test --watch",
-		"prepublishOnly": "bun run build"
+		"build": "mise run build",
+		"type-check": "mise run type-check",
+		"dev": "mise run dev",
+		"test": "mise run test",
+		"test:migrations": "mise run test:migrations",
+		"test:watch": "mise run test-watch",
+		"prepublishOnly": "mise run prepublishOnly"
 	},
 	"keywords": [
 		"better-auth",
