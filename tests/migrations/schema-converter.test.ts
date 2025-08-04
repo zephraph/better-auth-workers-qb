@@ -1,6 +1,6 @@
-import { describe, test, expect } from "bun:test";
-import { convertBetterAuthToOperations } from "../../src/schema-converter";
 import type { BetterAuthDbSchema } from "better-auth/db";
+import { describe, expect, test } from "vitest";
+import { convertBetterAuthToOperations } from "../../src/schema-converter";
 
 describe("Schema Converter", () => {
 	test("should convert simple Better Auth table to operations", () => {
@@ -8,9 +8,9 @@ describe("Schema Converter", () => {
 			user: {
 				fields: {
 					email: { type: "string", unique: true, required: true },
-					name: { type: "string", required: false }
-				}
-			}
+					name: { type: "string", required: false },
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -26,16 +26,16 @@ describe("Schema Converter", () => {
 			expect(createTableOp.columns.id).toEqual({
 				type: "TEXT",
 				primaryKey: true,
-				nullable: false
+				nullable: false,
 			});
 			expect(createTableOp.columns.email).toEqual({
 				type: "TEXT",
 				unique: true,
-				nullable: true // required: true maps to nullable: true in our system
+				nullable: false, // required: true maps to nullable: false (NOT NULL)
 			});
 			expect(createTableOp.columns.name).toEqual({
 				type: "TEXT",
-				nullable: true
+				nullable: true,
 			});
 		}
 	});
@@ -44,17 +44,17 @@ describe("Schema Converter", () => {
 		const betterAuthSchema: BetterAuthDbSchema = {
 			user: {
 				fields: {
-					email: { type: "string" }
-				}
+					email: { type: "string" },
+				},
 			},
 			session: {
 				fields: {
 					userId: {
 						type: "string",
-						references: { model: "user", field: "id", onDelete: "cascade" }
-					}
-				}
-			}
+						references: { model: "user", field: "id", onDelete: "cascade" },
+					},
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -62,7 +62,7 @@ describe("Schema Converter", () => {
 		expect(migration.operations).toHaveLength(3); // 2 tables + 1 index
 
 		const sessionTableOp = migration.operations.find(
-			op => op.type === "createTable" && op.table === "session"
+			(op) => op.type === "createTable" && op.table === "session",
 		);
 
 		expect(sessionTableOp).toBeDefined();
@@ -70,13 +70,13 @@ describe("Schema Converter", () => {
 			expect(sessionTableOp.columns.userId.references).toEqual({
 				table: "user",
 				column: "id",
-				onDelete: "CASCADE"
+				onDelete: "CASCADE",
 			});
 		}
 
 		// Should create index for foreign key
 		const indexOp = migration.operations.find(
-			op => op.type === "createIndex"
+			(op) => op.type === "createIndex",
 		);
 		expect(indexOp).toBeDefined();
 		if (indexOp?.type === "createIndex") {
@@ -95,9 +95,9 @@ describe("Schema Converter", () => {
 					salary: { type: "number", bigint: true },
 					isActive: { type: "boolean" },
 					createdAt: { type: "date" },
-					tags: { type: "string[]" }
-				}
-			}
+					tags: { type: "string[]" },
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -120,9 +120,9 @@ describe("Schema Converter", () => {
 					isActive: { type: "boolean", defaultValue: true },
 					count: { type: "number", defaultValue: 0 },
 					label: { type: "string", defaultValue: "user" },
-					createdAt: { type: "date", defaultValue: "now()" }
-				}
-			}
+					createdAt: { type: "date", defaultValue: "now()" },
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -132,7 +132,9 @@ describe("Schema Converter", () => {
 			expect(createTableOp.columns.isActive.defaultValue).toBe(true);
 			expect(createTableOp.columns.count.defaultValue).toBe(0);
 			expect(createTableOp.columns.label.defaultValue).toBe("user");
-			expect(createTableOp.columns.createdAt.defaultValue).toBe("CURRENT_TIMESTAMP");
+			expect(createTableOp.columns.createdAt.defaultValue).toBe(
+				"CURRENT_TIMESTAMP",
+			);
 		}
 	});
 
@@ -143,10 +145,10 @@ describe("Schema Converter", () => {
 					emailAddress: {
 						type: "string",
 						fieldName: "email",
-						unique: true
-					}
-				}
-			}
+						unique: true,
+					},
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -164,15 +166,18 @@ describe("Schema Converter", () => {
 			session: {
 				order: 2,
 				fields: {
-					userId: { type: "string", references: { model: "user", field: "id" } }
-				}
+					userId: {
+						type: "string",
+						references: { model: "user", field: "id" },
+					},
+				},
 			},
 			user: {
 				order: 1,
 				fields: {
-					email: { type: "string" }
-				}
-			}
+					email: { type: "string" },
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -196,9 +201,9 @@ describe("Schema Converter", () => {
 		const betterAuthSchema: BetterAuthDbSchema = {
 			user: {
 				fields: {
-					email: { type: "string" }
-				}
-			}
+					email: { type: "string" },
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema, true); // usePlural = true
@@ -217,16 +222,18 @@ describe("Schema Converter", () => {
 					email: {
 						type: "string",
 						unique: true,
-						references: { model: "profile", field: "id" }
-					}
-				}
-			}
+						references: { model: "profile", field: "id" },
+					},
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
 
 		// Should not create index for unique foreign key
-		const indexOps = migration.operations.filter(op => op.type === "createIndex");
+		const indexOps = migration.operations.filter(
+			(op) => op.type === "createIndex",
+		);
 		expect(indexOps).toHaveLength(0);
 	});
 
@@ -240,8 +247,8 @@ describe("Schema Converter", () => {
 					name: { type: "string", required: false },
 					createdAt: { type: "number", required: true },
 					updatedAt: { type: "number", required: true },
-					image: { type: "string", required: false }
-				}
+					image: { type: "string", required: false },
+				},
 			},
 			session: {
 				order: 2,
@@ -252,10 +259,10 @@ describe("Schema Converter", () => {
 					userId: {
 						type: "string",
 						required: true,
-						references: { model: "user", field: "id", onDelete: "cascade" }
-					}
-				}
-			}
+						references: { model: "user", field: "id", onDelete: "cascade" },
+					},
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -264,18 +271,20 @@ describe("Schema Converter", () => {
 
 		// Verify user table
 		const userTableOp = migration.operations.find(
-			op => op.type === "createTable" && op.table === "user"
+			(op) => op.type === "createTable" && op.table === "user",
 		);
 		expect(userTableOp).toBeDefined();
 
 		// Verify session table
 		const sessionTableOp = migration.operations.find(
-			op => op.type === "createTable" && op.table === "session"
+			(op) => op.type === "createTable" && op.table === "session",
 		);
 		expect(sessionTableOp).toBeDefined();
 
 		// Verify index creation
-		const indexOp = migration.operations.find(op => op.type === "createIndex");
+		const indexOp = migration.operations.find(
+			(op) => op.type === "createIndex",
+		);
 		expect(indexOp).toBeDefined();
 		if (indexOp?.type === "createIndex") {
 			expect(indexOp.table).toBe("session");

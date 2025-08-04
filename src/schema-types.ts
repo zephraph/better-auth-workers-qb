@@ -31,7 +31,7 @@ export interface SchemaState {
 }
 
 // Migration operation types
-export type MigrationOperation = 
+export type MigrationOperation =
 	| CreateTableOperation
 	| DropTableOperation
 	| AddColumnOperation

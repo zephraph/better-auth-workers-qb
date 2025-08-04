@@ -1,4 +1,8 @@
-import type { SchemaState, ColumnDefinition, IndexDefinition } from "./schema-types.js";
+import type {
+	ColumnDefinition,
+	IndexDefinition,
+	SchemaState,
+} from "./schema-types.js";
 
 /**
  * Generates SQL DDL statements from a schema state
@@ -9,14 +13,14 @@ export class SQLGenerator {
 	 */
 	generateSchema(state: SchemaState): string {
 		const statements: string[] = [];
-		
+
 		// Add header comment
 		statements.push("-- Better Auth SQLite Schema");
 		statements.push("-- Generated automatically - do not edit manually");
 		statements.push("");
 
 		// Generate CREATE TABLE statements
-		for (const [tableName, table] of Object.entries(state.tables)) {
+		for (const [_tableName, table] of Object.entries(state.tables)) {
 			statements.push(this.generateCreateTable(table));
 			statements.push("");
 		}
@@ -37,18 +41,21 @@ export class SQLGenerator {
 	/**
 	 * Generate CREATE TABLE statement for a single table
 	 */
-	private generateCreateTable(table: { name: string; columns: Record<string, ColumnDefinition> }): string {
+	private generateCreateTable(table: {
+		name: string;
+		columns: Record<string, ColumnDefinition>;
+	}): string {
 		const lines: string[] = [];
 		lines.push(`CREATE TABLE IF NOT EXISTS "${table.name}" (`);
 
 		const columnDefs: string[] = [];
-		
+
 		// Add columns
 		for (const [columnName, column] of Object.entries(table.columns)) {
 			columnDefs.push(this.generateColumnDefinition(columnName, column));
 		}
 
-		lines.push(columnDefs.map(def => `    ${def}`).join(",\n"));
+		lines.push(columnDefs.map((def) => `    ${def}`).join(",\n"));
 		lines.push(");");
 
 		return lines.join("\n");
@@ -57,7 +64,10 @@ export class SQLGenerator {
 	/**
 	 * Generate column definition SQL
 	 */
-	private generateColumnDefinition(columnName: string, column: ColumnDefinition): string {
+	private generateColumnDefinition(
+		columnName: string,
+		column: ColumnDefinition,
+	): string {
 		let definition = `"${columnName}"`;
 
 		// Add type
@@ -75,7 +85,10 @@ export class SQLGenerator {
 			definition += " PRIMARY KEY";
 		}
 
-		if (column.nullable === false || (column.nullable === undefined && !column.primaryKey)) {
+		if (
+			column.nullable === false ||
+			(column.nullable === undefined && !column.primaryKey)
+		) {
 			definition += " NOT NULL";
 		}
 
@@ -102,9 +115,14 @@ export class SQLGenerator {
 
 		// Add foreign key reference
 		if (column.references) {
-			const { table, column: refColumn, onDelete, onUpdate } = column.references;
+			const {
+				table,
+				column: refColumn,
+				onDelete,
+				onUpdate,
+			} = column.references;
 			definition += ` REFERENCES "${table}"("${refColumn}")`;
-			
+
 			if (onDelete) {
 				definition += ` ON DELETE ${onDelete}`;
 			}
@@ -119,10 +137,13 @@ export class SQLGenerator {
 	/**
 	 * Generate CREATE INDEX statement
 	 */
-	private generateCreateIndex(tableName: string, index: IndexDefinition): string {
+	private generateCreateIndex(
+		tableName: string,
+		index: IndexDefinition,
+	): string {
 		const uniqueKeyword = index.unique ? "UNIQUE " : "";
-		const columns = index.columns.map(col => `"${col}"`).join(", ");
-		
+		const columns = index.columns.map((col) => `"${col}"`).join(", ");
+
 		return `CREATE ${uniqueKeyword}INDEX IF NOT EXISTS "${index.name}" ON "${tableName}"(${columns});`;
 	}
 }

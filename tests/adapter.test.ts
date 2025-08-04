@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "vitest";
 import { QueryBuilder } from "workers-qb";
 import { workersQBAdapter } from "../src";
 import type { D1Database } from "../src/types";

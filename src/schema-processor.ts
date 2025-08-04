@@ -1,10 +1,9 @@
-import type { 
-	SchemaState, 
-	MigrationOperation, 
-	OperationalMigration,
-	TableDefinition,
+import type {
 	ColumnDefinition,
-	IndexDefinition 
+	IndexDefinition,
+	MigrationOperation,
+	OperationalMigration,
+	SchemaState,
 } from "./schema-types.js";
 
 /**
@@ -69,11 +68,17 @@ export class SchemaProcessor {
 				this.dropIndex(operation);
 				break;
 			default:
-				throw new Error(`Unknown operation type: ${(operation as any).type}`);
+				throw new Error(
+					`Unknown operation type: ${(operation as { type: string }).type}`,
+				);
 		}
 	}
 
-	private createTable(operation: { table: string; columns: Record<string, ColumnDefinition>; indexes?: IndexDefinition[] }): void {
+	private createTable(operation: {
+		table: string;
+		columns: Record<string, ColumnDefinition>;
+		indexes?: IndexDefinition[];
+	}): void {
 		if (this.state.tables[operation.table]) {
 			throw new Error(`Table ${operation.table} already exists`);
 		}
@@ -81,7 +86,7 @@ export class SchemaProcessor {
 		this.state.tables[operation.table] = {
 			name: operation.table,
 			columns: { ...operation.columns },
-			indexes: operation.indexes ? [...operation.indexes] : []
+			indexes: operation.indexes ? [...operation.indexes] : [],
 		};
 	}
 
@@ -92,13 +97,19 @@ export class SchemaProcessor {
 		delete this.state.tables[operation.table];
 	}
 
-	private addColumn(operation: { table: string; column: string; definition: ColumnDefinition }): void {
+	private addColumn(operation: {
+		table: string;
+		column: string;
+		definition: ColumnDefinition;
+	}): void {
 		const table = this.state.tables[operation.table];
 		if (!table) {
 			throw new Error(`Table ${operation.table} does not exist`);
 		}
 		if (table.columns[operation.column]) {
-			throw new Error(`Column ${operation.column} already exists in table ${operation.table}`);
+			throw new Error(
+				`Column ${operation.column} already exists in table ${operation.table}`,
+			);
 		}
 		table.columns[operation.column] = { ...operation.definition };
 	}
@@ -109,23 +120,34 @@ export class SchemaProcessor {
 			throw new Error(`Table ${operation.table} does not exist`);
 		}
 		if (!table.columns[operation.column]) {
-			throw new Error(`Column ${operation.column} does not exist in table ${operation.table}`);
+			throw new Error(
+				`Column ${operation.column} does not exist in table ${operation.table}`,
+			);
 		}
 		delete table.columns[operation.column];
 	}
 
-	private alterColumn(operation: { table: string; column: string; definition: ColumnDefinition }): void {
+	private alterColumn(operation: {
+		table: string;
+		column: string;
+		definition: ColumnDefinition;
+	}): void {
 		const table = this.state.tables[operation.table];
 		if (!table) {
 			throw new Error(`Table ${operation.table} does not exist`);
 		}
 		if (!table.columns[operation.column]) {
-			throw new Error(`Column ${operation.column} does not exist in table ${operation.table}`);
+			throw new Error(
+				`Column ${operation.column} does not exist in table ${operation.table}`,
+			);
 		}
 		table.columns[operation.column] = { ...operation.definition };
 	}
 
-	private createIndex(operation: { table: string; index: IndexDefinition }): void {
+	private createIndex(operation: {
+		table: string;
+		index: IndexDefinition;
+	}): void {
 		const table = this.state.tables[operation.table];
 		if (!table) {
 			throw new Error(`Table ${operation.table} does not exist`);
@@ -133,13 +155,17 @@ export class SchemaProcessor {
 		if (!table.indexes) {
 			table.indexes = [];
 		}
-		
+
 		// Check if index already exists
-		const existingIndex = table.indexes.find(idx => idx.name === operation.index.name);
+		const existingIndex = table.indexes.find(
+			(idx) => idx.name === operation.index.name,
+		);
 		if (existingIndex) {
-			throw new Error(`Index ${operation.index.name} already exists on table ${operation.table}`);
+			throw new Error(
+				`Index ${operation.index.name} already exists on table ${operation.table}`,
+			);
 		}
-		
+
 		table.indexes.push({ ...operation.index });
 	}
 
@@ -151,12 +177,16 @@ export class SchemaProcessor {
 		if (!table.indexes) {
 			return; // No indexes to drop
 		}
-		
-		const indexIndex = table.indexes.findIndex(idx => idx.name === operation.indexName);
+
+		const indexIndex = table.indexes.findIndex(
+			(idx) => idx.name === operation.indexName,
+		);
 		if (indexIndex === -1) {
-			throw new Error(`Index ${operation.indexName} does not exist on table ${operation.table}`);
+			throw new Error(
+				`Index ${operation.indexName} does not exist on table ${operation.table}`,
+			);
 		}
-		
+
 		table.indexes.splice(indexIndex, 1);
 	}
 }

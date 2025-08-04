@@ -1,8 +1,8 @@
-import { describe, test, expect } from "bun:test";
+import type { BetterAuthDbSchema } from "better-auth/db";
+import { describe, expect, test } from "vitest";
 import { convertBetterAuthToOperations } from "../../src/schema-converter";
 import { SchemaProcessor } from "../../src/schema-processor";
 import { SQLGenerator } from "../../src/sql-generator";
-import type { BetterAuthDbSchema } from "better-auth/db";
 
 describe("Migration Integration", () => {
 	test("should convert Better Auth schema to SQL through complete flow", () => {
@@ -15,8 +15,8 @@ describe("Migration Integration", () => {
 					name: { type: "string", required: false },
 					createdAt: { type: "number", required: true },
 					updatedAt: { type: "number", required: true },
-					image: { type: "string", required: false }
-				}
+					image: { type: "string", required: false },
+				},
 			},
 			session: {
 				order: 2,
@@ -27,9 +27,9 @@ describe("Migration Integration", () => {
 					userId: {
 						type: "string",
 						required: true,
-						references: { model: "user", field: "id", onDelete: "cascade" }
-					}
-				}
+						references: { model: "user", field: "id", onDelete: "cascade" },
+					},
+				},
 			},
 			account: {
 				order: 3,
@@ -39,23 +39,23 @@ describe("Migration Integration", () => {
 					userId: {
 						type: "string",
 						required: true,
-						references: { model: "user", field: "id", onDelete: "cascade" }
+						references: { model: "user", field: "id", onDelete: "cascade" },
 					},
 					accessToken: { type: "string", required: false },
 					refreshToken: { type: "string", required: false },
 					idToken: { type: "string", required: false },
 					expiresAt: { type: "number", required: false },
-					password: { type: "string", required: false }
-				}
+					password: { type: "string", required: false },
+				},
 			},
 			verification: {
 				order: 4,
 				fields: {
 					identifier: { type: "string", required: true },
 					value: { type: "string", required: true },
-					expiresAt: { type: "number", required: true }
-				}
-			}
+					expiresAt: { type: "number", required: true },
+				},
+			},
 		};
 
 		// Step 1: Convert Better Auth schema to operations
@@ -71,8 +71,8 @@ describe("Migration Integration", () => {
 		const sql = sqlGenerator.generateSchema(schemaState);
 
 		// Verify the generated SQL contains expected structures
-		expect(sql).toContain('-- Better Auth SQLite Schema');
-		expect(sql).toContain('-- Generated automatically - do not edit manually');
+		expect(sql).toContain("-- Better Auth SQLite Schema");
+		expect(sql).toContain("-- Generated automatically - do not edit manually");
 
 		// User table
 		expect(sql).toContain('CREATE TABLE IF NOT EXISTS "user" (');
@@ -107,11 +107,15 @@ describe("Migration Integration", () => {
 		expect(sql).toContain('"expiresAt" INTEGER NOT NULL');
 
 		// Indexes
-		expect(sql).toContain('CREATE INDEX IF NOT EXISTS "idx_session_userId" ON "session"("userId");');
-		expect(sql).toContain('CREATE INDEX IF NOT EXISTS "idx_account_userId" ON "account"("userId");');
+		expect(sql).toContain(
+			'CREATE INDEX IF NOT EXISTS "idx_session_userId" ON "session"("userId");',
+		);
+		expect(sql).toContain(
+			'CREATE INDEX IF NOT EXISTS "idx_account_userId" ON "account"("userId");',
+		);
 
 		// Should not contain BOOLEAN types (converted to INTEGER)
-		expect(sql).not.toContain('BOOLEAN');
+		expect(sql).not.toContain("BOOLEAN");
 
 		// Verify structure counts
 		const tableCount = (sql.match(/CREATE TABLE/g) || []).length;
@@ -130,8 +134,8 @@ describe("Migration Integration", () => {
 					name: { type: "string", required: false },
 					createdAt: { type: "number", required: true },
 					updatedAt: { type: "number", required: true },
-					image: { type: "string", required: false }
-				}
+					image: { type: "string", required: false },
+				},
 			},
 			session: {
 				order: 2,
@@ -142,9 +146,9 @@ describe("Migration Integration", () => {
 					userId: {
 						type: "string",
 						required: true,
-						references: { model: "user", field: "id", onDelete: "cascade" }
-					}
-				}
+						references: { model: "user", field: "id", onDelete: "cascade" },
+					},
+				},
 			},
 			account: {
 				order: 3,
@@ -154,23 +158,23 @@ describe("Migration Integration", () => {
 					userId: {
 						type: "string",
 						required: true,
-						references: { model: "user", field: "id", onDelete: "cascade" }
+						references: { model: "user", field: "id", onDelete: "cascade" },
 					},
 					accessToken: { type: "string", required: false },
 					refreshToken: { type: "string", required: false },
 					idToken: { type: "string", required: false },
 					expiresAt: { type: "number", required: false },
-					password: { type: "string", required: false }
-				}
+					password: { type: "string", required: false },
+				},
 			},
 			verification: {
 				order: 4,
 				fields: {
 					identifier: { type: "string", required: true },
 					value: { type: "string", required: true },
-					expiresAt: { type: "number", required: true }
-				}
-			}
+					expiresAt: { type: "number", required: true },
+				},
+			},
 		};
 
 		// Generate SQL through operation flow
@@ -190,7 +194,7 @@ describe("Migration Integration", () => {
 			/"emailVerified" INTEGER NOT NULL DEFAULT 0/,
 			/REFERENCES "user"\("id"\) ON DELETE CASCADE/,
 			/CREATE INDEX IF NOT EXISTS "idx_session_userId"/,
-			/CREATE INDEX IF NOT EXISTS "idx_account_userId"/
+			/CREATE INDEX IF NOT EXISTS "idx_account_userId"/,
 		];
 
 		for (const pattern of expectedPatterns) {
@@ -208,17 +212,17 @@ describe("Migration Integration", () => {
 		const betterAuthSchema: BetterAuthDbSchema = {
 			user: {
 				fields: {
-					email: { type: "string" }
-				}
+					email: { type: "string" },
+				},
 			},
 			session: {
 				fields: {
 					userId: {
 						type: "string",
-						references: { model: "user", field: "id" }
-					}
-				}
-			}
+						references: { model: "user", field: "id" },
+					},
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema, true); // usePlural = true
@@ -231,7 +235,9 @@ describe("Migration Integration", () => {
 		expect(sql).toContain('CREATE TABLE IF NOT EXISTS "users" (');
 		expect(sql).toContain('CREATE TABLE IF NOT EXISTS "sessions" (');
 		expect(sql).toContain('REFERENCES "users"("id")');
-		expect(sql).toContain('CREATE INDEX IF NOT EXISTS "idx_sessions_userId" ON "sessions"("userId")');
+		expect(sql).toContain(
+			'CREATE INDEX IF NOT EXISTS "idx_sessions_userId" ON "sessions"("userId")',
+		);
 	});
 
 	test("should maintain referential integrity throughout migration", () => {
@@ -239,31 +245,31 @@ describe("Migration Integration", () => {
 			user: {
 				order: 1,
 				fields: {
-					email: { type: "string" }
-				}
+					email: { type: "string" },
+				},
 			},
 			profile: {
 				order: 2,
 				fields: {
 					userId: {
 						type: "string",
-						references: { model: "user", field: "id", onDelete: "cascade" }
-					}
-				}
+						references: { model: "user", field: "id", onDelete: "cascade" },
+					},
+				},
 			},
 			post: {
 				order: 3,
 				fields: {
 					authorId: {
 						type: "string",
-						references: { model: "user", field: "id", onDelete: "set null" }
+						references: { model: "user", field: "id", onDelete: "set null" },
 					},
 					profileId: {
 						type: "string",
-						references: { model: "profile", field: "id", onDelete: "restrict" }
-					}
-				}
-			}
+						references: { model: "profile", field: "id", onDelete: "restrict" },
+					},
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -280,7 +286,9 @@ describe("Migration Integration", () => {
 
 		// Verify tables are created in dependency order
 		const userTableIndex = sql.indexOf('CREATE TABLE IF NOT EXISTS "user"');
-		const profileTableIndex = sql.indexOf('CREATE TABLE IF NOT EXISTS "profile"');
+		const profileTableIndex = sql.indexOf(
+			'CREATE TABLE IF NOT EXISTS "profile"',
+		);
 		const postTableIndex = sql.indexOf('CREATE TABLE IF NOT EXISTS "post"');
 
 		expect(userTableIndex).toBeLessThan(profileTableIndex);
@@ -296,9 +304,9 @@ describe("Migration Integration", () => {
 					metadata: { type: "string[]" },
 					isActive: { type: "boolean", defaultValue: true },
 					createdAt: { type: "date", defaultValue: "now()" },
-					customField: { type: "string", fieldName: "custom_column" }
-				}
-			}
+					customField: { type: "string", fieldName: "custom_column" },
+				},
+			},
 		};
 
 		const migration = convertBetterAuthToOperations(betterAuthSchema);
@@ -312,7 +320,9 @@ describe("Migration Integration", () => {
 		expect(sql).toContain('"age" BIGINT'); // bigint: true
 		expect(sql).toContain('"metadata" TEXT'); // array type
 		expect(sql).toContain('"isActive" INTEGER NOT NULL DEFAULT 1'); // boolean with default
-		expect(sql).toContain('"createdAt" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP'); // date with now()
+		expect(sql).toContain(
+			'"createdAt" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP',
+		); // date with now()
 		expect(sql).toContain('"custom_column" TEXT'); // custom field name
 		expect(sql).not.toContain('"customField"'); // Original name should not appear
 	});

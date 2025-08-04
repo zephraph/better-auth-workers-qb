@@ -1,12 +1,12 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { SchemaProcessor } from "../../src/schema-processor";
-import type { OperationalMigration, SchemaState } from "../../src/schema-types";
+import type { OperationalMigration } from "../../src/schema-types";
 
 describe("SchemaProcessor", () => {
 	test("should initialize with empty schema", () => {
 		const processor = new SchemaProcessor();
 		const state = processor.getState();
-		
+
 		expect(state.tables).toEqual({});
 	});
 
@@ -21,10 +21,10 @@ describe("SchemaProcessor", () => {
 					columns: {
 						id: { type: "TEXT", primaryKey: true, nullable: false },
 						email: { type: "TEXT", unique: true, nullable: false },
-						name: { type: "TEXT", nullable: true }
-					}
-				}
-			]
+						name: { type: "TEXT", nullable: true },
+					},
+				},
+			],
 		};
 
 		processor.applyMigration(migration);
@@ -35,16 +35,16 @@ describe("SchemaProcessor", () => {
 		expect(state.tables.users.columns.id).toEqual({
 			type: "TEXT",
 			primaryKey: true,
-			nullable: false
+			nullable: false,
 		});
 		expect(state.tables.users.columns.email).toEqual({
 			type: "TEXT",
 			unique: true,
-			nullable: false
+			nullable: false,
 		});
 		expect(state.tables.users.columns.name).toEqual({
 			type: "TEXT",
-			nullable: true
+			nullable: true,
 		});
 	});
 
@@ -58,15 +58,15 @@ describe("SchemaProcessor", () => {
 					table: "users",
 					columns: {
 						id: { type: "TEXT", primaryKey: true, nullable: false },
-						email: { type: "TEXT", nullable: false }
-					}
+						email: { type: "TEXT", nullable: false },
+					},
 				},
 				{
 					type: "createIndex",
 					table: "users",
-					index: { name: "idx_users_email", columns: ["email"] }
-				}
-			]
+					index: { name: "idx_users_email", columns: ["email"] },
+				},
+			],
 		};
 
 		processor.applyMigration(migration);
@@ -74,15 +74,15 @@ describe("SchemaProcessor", () => {
 
 		expect(state.tables.users.indexes).toBeDefined();
 		expect(state.tables.users.indexes).toHaveLength(1);
-		expect(state.tables.users.indexes![0]).toEqual({
+		expect(state.tables.users.indexes?.[0]).toEqual({
 			name: "idx_users_email",
-			columns: ["email"]
+			columns: ["email"],
 		});
 	});
 
 	test("should apply addColumn operation", () => {
 		const processor = new SchemaProcessor();
-		
+
 		// First create the table
 		const createTableMigration: OperationalMigration = {
 			name: "create_table",
@@ -91,10 +91,10 @@ describe("SchemaProcessor", () => {
 					type: "createTable",
 					table: "users",
 					columns: {
-						id: { type: "TEXT", primaryKey: true, nullable: false }
-					}
-				}
-			]
+						id: { type: "TEXT", primaryKey: true, nullable: false },
+					},
+				},
+			],
 		};
 
 		// Then add a column
@@ -105,20 +105,20 @@ describe("SchemaProcessor", () => {
 					type: "addColumn",
 					table: "users",
 					column: "email",
-					definition: { type: "TEXT", unique: true, nullable: false }
-				}
-			]
+					definition: { type: "TEXT", unique: true, nullable: false },
+				},
+			],
 		};
 
 		processor.applyMigration(createTableMigration);
 		processor.applyMigration(addColumnMigration);
-		
+
 		const state = processor.getState();
 
 		expect(state.tables.users.columns.email).toEqual({
 			type: "TEXT",
 			unique: true,
-			nullable: false
+			nullable: false,
 		});
 	});
 
@@ -131,8 +131,8 @@ describe("SchemaProcessor", () => {
 					type: "createTable",
 					table: "users",
 					columns: {
-						id: { type: "TEXT", primaryKey: true, nullable: false }
-					}
+						id: { type: "TEXT", primaryKey: true, nullable: false },
+					},
 				},
 				{
 					type: "createTable",
@@ -142,11 +142,11 @@ describe("SchemaProcessor", () => {
 						userId: {
 							type: "TEXT",
 							nullable: false,
-							references: { table: "users", column: "id", onDelete: "CASCADE" }
-						}
-					}
-				}
-			]
+							references: { table: "users", column: "id", onDelete: "CASCADE" },
+						},
+					},
+				},
+			],
 		};
 
 		processor.applyMigration(migration);
@@ -155,7 +155,7 @@ describe("SchemaProcessor", () => {
 		expect(state.tables.posts.columns.userId.references).toEqual({
 			table: "users",
 			column: "id",
-			onDelete: "CASCADE"
+			onDelete: "CASCADE",
 		});
 	});
 
@@ -168,17 +168,17 @@ describe("SchemaProcessor", () => {
 					type: "createTable",
 					table: "users",
 					columns: {
-						id: { type: "TEXT", primaryKey: true, nullable: false }
-					}
+						id: { type: "TEXT", primaryKey: true, nullable: false },
+					},
 				},
 				{
 					type: "createTable",
 					table: "users", // Duplicate table name
 					columns: {
-						id: { type: "TEXT", primaryKey: true, nullable: false }
-					}
-				}
-			]
+						id: { type: "TEXT", primaryKey: true, nullable: false },
+					},
+				},
+			],
 		};
 
 		expect(() => {
@@ -188,7 +188,7 @@ describe("SchemaProcessor", () => {
 
 	test("should process multiple migrations in order", () => {
 		const processor = new SchemaProcessor();
-		
+
 		const migrations: OperationalMigration[] = [
 			{
 				name: "create_users",
@@ -197,10 +197,10 @@ describe("SchemaProcessor", () => {
 						type: "createTable",
 						table: "users",
 						columns: {
-							id: { type: "TEXT", primaryKey: true, nullable: false }
-						}
-					}
-				]
+							id: { type: "TEXT", primaryKey: true, nullable: false },
+						},
+					},
+				],
 			},
 			{
 				name: "add_email",
@@ -209,9 +209,9 @@ describe("SchemaProcessor", () => {
 						type: "addColumn",
 						table: "users",
 						column: "email",
-						definition: { type: "TEXT", nullable: false }
-					}
-				]
+						definition: { type: "TEXT", nullable: false },
+					},
+				],
 			},
 			{
 				name: "create_posts",
@@ -224,12 +224,12 @@ describe("SchemaProcessor", () => {
 							userId: {
 								type: "TEXT",
 								nullable: false,
-								references: { table: "users", column: "id" }
-							}
-						}
-					}
-				]
-			}
+								references: { table: "users", column: "id" },
+							},
+						},
+					},
+				],
+			},
 		];
 
 		processor.applyMigrations(migrations);

@@ -5,7 +5,10 @@ export type TableSchema = BetterAuthDbSchema;
 /**
  * Maps Better Auth field types to SQLite types
  */
-const getSQLiteType = (fieldType: any, field?: any): string => {
+const getSQLiteType = (
+	fieldType: unknown,
+	field?: Record<string, unknown>,
+): string => {
 	// Convert the field type to string for processing
 	const typeStr = typeof fieldType === "string" ? fieldType : String(fieldType);
 

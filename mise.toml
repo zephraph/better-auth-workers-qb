@@ -26,20 +26,18 @@ description = "Run development server"
 
 [tasks.test]
 depends = ["build"]
-run = "node test-migrations.js"
+run = "vitest run"
 description = "Build and run all tests"
 
-[tasks."test:migrations"]
-run = "node test-migrations.js"
-description = "Run migration system tests"
+[tasks."test:watch"]
+depends = ["build"]
+run = "vitest"
+description = "Run tests in watch mode"
 
 [tasks."test:bun"]
 run = "bun test"
 description = "Run bun tests (when working)"
 
-[tasks.test-watch]
-run = "bun test --watch"
-description = "Run tests in watch mode"
 
 [tasks.prepublishOnly]
 run = "build"

@@ -1,5 +1,5 @@
 import type { AdapterDebugLogs } from "better-auth/adapters";
-import type { QueryBuilder } from "workers-qb";
+import type { D1QB, QueryBuilder } from "workers-qb";
 
 export interface D1Database {
 	prepare(query: string): D1PreparedStatement;
@@ -34,32 +34,32 @@ export interface D1ExecResult {
 }
 
 export interface WorkersQBAdapterConfig {
-	database: D1Database | QueryBuilder<any>;
+	database: D1Database | D1QB | QueryBuilder<any>;
 	debugLogs?: AdapterDebugLogs;
 	usePlural?: boolean;
 	createSchema?: "sql" | "migrations";
 }
 
 export interface WhereCondition {
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 export interface CreateOptions {
 	model: string;
-	data: Record<string, any>;
+	data: Record<string, unknown>;
 	select?: string[];
 }
 
 export interface UpdateOptions {
 	model: string;
-	data: Record<string, any>;
+	data: Record<string, unknown>;
 	where: WhereCondition;
 	select?: string[];
 }
 
 export interface UpdateManyOptions {
 	model: string;
-	data: Record<string, any>;
+	data: Record<string, unknown>;
 	where?: WhereCondition;
 }
 

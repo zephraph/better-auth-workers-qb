@@ -1,12 +1,16 @@
 import type { BetterAuthDbSchema } from "better-auth/db";
-import type { OperationalMigration, MigrationOperation, ColumnDefinition } from "./schema-types.js";
+import type {
+	ColumnDefinition,
+	MigrationOperation,
+	OperationalMigration,
+} from "./schema-types.js";
 
 /**
  * Converts Better Auth table schema to migration operations
  */
 export function convertBetterAuthToOperations(
 	tables: BetterAuthDbSchema,
-	usePlural = false
+	usePlural = false,
 ): OperationalMigration {
 	const operations: MigrationOperation[] = [];
 
@@ -23,20 +27,20 @@ export function convertBetterAuthToOperations(
 		columns.id = {
 			type: "TEXT",
 			primaryKey: true,
-			nullable: false
+			nullable: false,
 		};
 
 		// Process each field
 		for (const [fieldName, field] of Object.entries(table.fields)) {
 			const columnName = field.fieldName || fieldName;
-			columns[columnName] = convertFieldToColumn(field);
+			columns[columnName] = convertFieldToColumn(field, usePlural);
 		}
 
 		// Create the table
 		operations.push({
 			type: "createTable",
 			table: actualTableName,
-			columns
+			columns,
 		});
 
 		// Add indexes for foreign key references
@@ -46,7 +50,7 @@ export function convertBetterAuthToOperations(
 			if (field.references && !field.unique) {
 				indexes.push({
 					name: `idx_${actualTableName}_${columnName}`,
-					columns: [columnName]
+					columns: [columnName],
 				});
 			}
 		}
@@ -56,24 +60,27 @@ export function convertBetterAuthToOperations(
 			operations.push({
 				type: "createIndex",
 				table: actualTableName,
-				index
+				index,
 			});
 		}
 	}
 
 	return {
 		name: "0001_create_initial_tables",
-		operations
+		operations,
 	};
 }
 
 /**
  * Convert Better Auth field definition to column definition
  */
-function convertFieldToColumn(field: any): ColumnDefinition {
+function convertFieldToColumn(
+	field: Record<string, unknown>,
+	usePlural = false,
+): ColumnDefinition {
 	const column: ColumnDefinition = {
 		type: mapBetterAuthType(field.type, field),
-		nullable: field.required === false || field.defaultValue !== undefined
+		nullable: field.required === false,
 	};
 
 	// Handle unique constraint
@@ -86,9 +93,15 @@ function convertFieldToColumn(field: any): ColumnDefinition {
 		if (typeof field.defaultValue === "function") {
 			// Handle function defaults - some common SQL defaults
 		} else if (typeof field.defaultValue === "string") {
-			if (field.defaultValue === "now()" || field.defaultValue === "CURRENT_TIMESTAMP") {
+			if (
+				field.defaultValue === "now()" ||
+				field.defaultValue === "CURRENT_TIMESTAMP"
+			) {
 				column.defaultValue = "CURRENT_TIMESTAMP";
-			} else if (field.defaultValue !== "uuid()" && field.defaultValue !== "cuid()") {
+			} else if (
+				field.defaultValue !== "uuid()" &&
+				field.defaultValue !== "cuid()"
+			) {
 				// For ID generation functions, we don't set a default in SQL
 				column.defaultValue = field.defaultValue;
 			}
@@ -99,11 +112,17 @@ function convertFieldToColumn(field: any): ColumnDefinition {
 
 	// Handle foreign key references
 	if (field.references) {
-		const refTableName = field.references.model;
+		const refTableName = usePlural
+			? `${field.references.model}s`
+			: field.references.model;
 		column.references = {
 			table: refTableName,
 			column: field.references.field,
-			onDelete: field.references.onDelete?.toUpperCase() as any
+			onDelete: field.references.onDelete?.toUpperCase() as
+				| "CASCADE"
+				| "SET NULL"
+				| "RESTRICT"
+				| "NO ACTION",
 		};
 	}
 
@@ -113,7 +132,10 @@ function convertFieldToColumn(field: any): ColumnDefinition {
 /**
  * Map Better Auth field types to SQLite types
  */
-function mapBetterAuthType(fieldType: any, field?: any): ColumnDefinition["type"] {
+function mapBetterAuthType(
+	fieldType: unknown,
+	field?: Record<string, unknown>,
+): ColumnDefinition["type"] {
 	const typeStr = typeof fieldType === "string" ? fieldType : String(fieldType);
 
 	// Handle array types
