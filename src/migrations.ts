@@ -1,61 +1,83 @@
-import { type Migration } from 'workers-qb';
+import type { OperationalMigration } from './schema-types';
 
-export const createInitialTables: Migration = {
+export const createInitialTables: OperationalMigration = {
 	name: '0001_create_initial_tables',
-	sql: `
--- Better Auth database schema for D1
--- This creates the necessary tables for better-auth
-
--- Users table
-CREATE TABLE IF NOT EXISTS user (
-    id TEXT PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
-    emailVerified BOOLEAN NOT NULL DEFAULT FALSE,
-    name TEXT,
-    createdAt INTEGER NOT NULL,
-    updatedAt INTEGER NOT NULL,
-    image TEXT
-);
-
--- Sessions table
-CREATE TABLE IF NOT EXISTS session (
-    id TEXT PRIMARY KEY,
-    expiresAt INTEGER NOT NULL,
-    ipAddress TEXT,
-    userAgent TEXT,
-    userId TEXT NOT NULL,
-    FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
-);
-
--- Accounts table (for OAuth providers)
-CREATE TABLE IF NOT EXISTS account (
-    id TEXT PRIMARY KEY,
-    accountId TEXT NOT NULL,
-    providerId TEXT NOT NULL,
-    userId TEXT NOT NULL,
-    accessToken TEXT,
-    refreshToken TEXT,
-    idToken TEXT,
-    expiresAt INTEGER,
-    password TEXT,
-    FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
-);
-
--- Verification tokens table
-CREATE TABLE IF NOT EXISTS verification (
-    id TEXT PRIMARY KEY,
-    identifier TEXT NOT NULL,
-    value TEXT NOT NULL,
-    expiresAt INTEGER NOT NULL
-);
-
--- Indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_session_userId ON session(userId);
-CREATE INDEX IF NOT EXISTS idx_account_userId ON account(userId);
-CREATE INDEX IF NOT EXISTS idx_verification_identifier ON verification(identifier);
-	`.trim(),
+	operations: [
+		{
+			type: "createTable",
+			table: "user",
+			columns: {
+				id: { type: "TEXT", primaryKey: true, nullable: false },
+				email: { type: "TEXT", unique: true, nullable: false },
+				emailVerified: { type: "BOOLEAN", nullable: false, defaultValue: false },
+				name: { type: "TEXT", nullable: true },
+				createdAt: { type: "INTEGER", nullable: false },
+				updatedAt: { type: "INTEGER", nullable: false },
+				image: { type: "TEXT", nullable: true }
+			}
+		},
+		{
+			type: "createTable",
+			table: "session",
+			columns: {
+				id: { type: "TEXT", primaryKey: true, nullable: false },
+				expiresAt: { type: "INTEGER", nullable: false },
+				ipAddress: { type: "TEXT", nullable: true },
+				userAgent: { type: "TEXT", nullable: true },
+				userId: { 
+					type: "TEXT", 
+					nullable: false,
+					references: { table: "user", column: "id", onDelete: "CASCADE" }
+				}
+			}
+		},
+		{
+			type: "createTable",
+			table: "account",
+			columns: {
+				id: { type: "TEXT", primaryKey: true, nullable: false },
+				accountId: { type: "TEXT", nullable: false },
+				providerId: { type: "TEXT", nullable: false },
+				userId: { 
+					type: "TEXT", 
+					nullable: false,
+					references: { table: "user", column: "id", onDelete: "CASCADE" }
+				},
+				accessToken: { type: "TEXT", nullable: true },
+				refreshToken: { type: "TEXT", nullable: true },
+				idToken: { type: "TEXT", nullable: true },
+				expiresAt: { type: "INTEGER", nullable: true },
+				password: { type: "TEXT", nullable: true }
+			}
+		},
+		{
+			type: "createTable",
+			table: "verification",
+			columns: {
+				id: { type: "TEXT", primaryKey: true, nullable: false },
+				identifier: { type: "TEXT", nullable: false },
+				value: { type: "TEXT", nullable: false },
+				expiresAt: { type: "INTEGER", nullable: false }
+			}
+		},
+		{
+			type: "createIndex",
+			table: "session",
+			index: { name: "idx_session_userId", columns: ["userId"] }
+		},
+		{
+			type: "createIndex",
+			table: "account",
+			index: { name: "idx_account_userId", columns: ["userId"] }
+		},
+		{
+			type: "createIndex",
+			table: "verification",
+			index: { name: "idx_verification_identifier", columns: ["identifier"] }
+		}
+	]
 };
 
-export const migrations: Migration[] = [
+export const migrations: OperationalMigration[] = [
 	createInitialTables,
 ];
