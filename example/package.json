@@ -14,7 +14,7 @@
 	},
 	"dependencies": {
 		"better-auth": "^1.1.38",
-		"better-auth-workers-qb": "workspace:*",
+		"better-auth-workers-qb": "file:..",
 		"workers-qb": "^1.11.0"
 	},
 	"devDependencies": {

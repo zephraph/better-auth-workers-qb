@@ -2,6 +2,9 @@
 	"name": "better-auth-workers-qb",
 	"version": "0.1.0",
 	"type": "module",
+	"workspaces": [
+		"example"
+	],
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
