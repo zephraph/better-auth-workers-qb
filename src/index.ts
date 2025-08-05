@@ -268,7 +268,6 @@ export const workersQBAdapter = (
 	});
 
 export default workersQBAdapter;
-export * from "./migrations.js";
 export { convertBetterAuthToOperations } from "./schema-converter.js";
 export { SchemaProcessor } from "./schema-processor.js";
 export * from "./schema-types.js";
