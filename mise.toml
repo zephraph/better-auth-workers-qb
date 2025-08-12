@@ -16,7 +16,7 @@ description = "Build JavaScript modules and TypeScript declarations"
 run = "rm -rf dist"
 description = "Clean build artifacts"
 
-[tasks.type-check]
+[tasks.typecheck]
 run = "tsc --noEmit"
 description = "Type check the project"
 
